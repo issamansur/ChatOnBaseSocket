@@ -47,7 +47,7 @@ int main()
     if (bind(serverSocket, (SOCKADDR*)&service, sizeof(service)) == SOCKET_ERROR) {
         cout << "Binding failed: " << WSAGetLastError() << endl;
         closesocket(serverSocket);
-        WSACleanup();
+        //WSACleanup();
         return 0;
     }
     cout << "bind() is OK!" << endl;
@@ -75,14 +75,12 @@ int main()
     }
 
     // Receive data
-    while (true) {
-        char receiveBuffer[200] = "";
-        int byteCount = recv(acceptSocket, receiveBuffer, 200, 0);
-        if (byteCount < 0) {
-            cout << "Server error!" << WSAGetLastError() << endl;
-            return -1;
-        }
-
-        cout << receiveBuffer;
+    char receiveBuffer[200] = "";
+    int byteCount = recv(acceptSocket, receiveBuffer, 200, 0);
+    if (byteCount < 0) {
+        cout << "Server error!" << WSAGetLastError() << endl;
+        return -1;
     }
+
+    cout << receiveBuffer;
 }

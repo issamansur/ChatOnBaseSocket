@@ -47,7 +47,7 @@ int main()
     if (bind(serverSocket, (SOCKADDR*)&service, sizeof(service)) == SOCKET_ERROR) {
         cout << "Binding failed: " << WSAGetLastError() << endl;
         closesocket(serverSocket);
-        //WSACleanup();
+        WSACleanup();
         return 0;
     }
     cout << "bind() is OK!" << endl;
@@ -70,8 +70,8 @@ int main()
     }
     else {
         cout << "Accepted connection" << endl;
-        system("pause");
-        WSACleanup();
+        //system("pause");
+        //WSACleanup();
     }
 
     // Receive data

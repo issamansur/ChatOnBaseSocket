@@ -11,12 +11,12 @@ int main() {
     WORD wVersion = MAKEWORD(2, 2);
 
     wsa_startup_return_code = WSAStartup(wVersion, &wsaData);
-    if (wsa_startup_return_code != 0) {
+    if (wsa_startup_return_code == 0) {
         cout << "The Winsock dll found!" << endl;
         cout << "The status: " << wsaData.szSystemStatus << endl;
     }
     else {
-        cout << "The Winsock dll found!" << endl;
+        cout << "The Winsock dll not found!" << endl;
         return 0;
     }
 

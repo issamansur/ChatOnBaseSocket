@@ -26,6 +26,7 @@ Create a new `C++ Console Project` and follow the steps belows:
 
 ## Tasks
 - [x] Connect `Client` with `Server`
+- [ ] `Client` can send message with size more than `bufferSize`
 - [ ] `Client` can send more than one message
 - [ ] `Server` can accept and listen more than one `Client`
 - [ ] `Server` can receive message from one `Client` and MAYBE send this message to second `Client` 

@@ -1,12 +1,10 @@
-﻿#include <iostream>
-
+#include <iostream>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
 using namespace std;
 
-int main()
-{
+int main() {
     // Initialize WSA
     WSADATA wsaData;
     int wsa_startup_return_code;
@@ -18,23 +16,20 @@ int main()
         cout << "The status: " << wsaData.szSystemStatus << endl;
     }
     else {
-        cout << "The Winsock dll found!" << endl;
+        cout << "The Winsock dll not found!" << endl;
         return 0;
     }
 
 
     // Create a socket
     SOCKET serverSocket, acceptSocket;
-
     serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (serverSocket == INVALID_SOCKET) {
         cout << "Error at socket(): " << WSAGetLastError() << endl;
         WSACleanup();
         return 0;
     }
-    else {
-        cout << "socket() is OK!" << endl;
-    }
+    cout << "socket() is OK!" << endl;
 
 
     // Bind the socket with port
@@ -44,6 +39,7 @@ int main()
     
     InetPton(AF_INET, L"127.0.0.1", &service.sin_addr.s_addr);
     service.sin_port = htons(port);
+
     if (bind(serverSocket, (SOCKADDR*)&service, sizeof(service)) == SOCKET_ERROR) {
         cout << "Binding failed: " << WSAGetLastError() << endl;
         closesocket(serverSocket);
@@ -52,35 +48,39 @@ int main()
     }
     cout << "bind() is OK!" << endl;
 
+
     // Listen on the socket
     if (listen(serverSocket, 1) == SOCKET_ERROR) {
         cout << "Error listening on socket: " << WSAGetLastError() << endl;
+        closesocket(serverSocket);
+        WSACleanup();
         return 0;
     }
-    else {
-        cout << "Start listening on port: " << port << endl;
-    }
+    cout << "Start listening on port: " << port << endl;
 
     // Accept a connection
     acceptSocket = accept(serverSocket, NULL, NULL);
     if (acceptSocket == INVALID_SOCKET) {
         cout << "Accept failed: " << WSAGetLastError() << endl;
+        closesocket(serverSocket);
         WSACleanup();
         return -1;
     }
-    else {
-        cout << "Accepted connection" << endl;
-        //system("pause");
-        //WSACleanup();
-    }
+    cout << "Accepted connection" << endl;
 
     // Receive data
     char receiveBuffer[200] = "";
     int byteCount = recv(acceptSocket, receiveBuffer, 200, 0);
     if (byteCount < 0) {
-        cout << "Server error!" << WSAGetLastError() << endl;
-        return -1;
+        cout << "Server error while receive message: " << WSAGetLastError() << endl;
+    } else {
+        cout << "Received data: " << receiveBuffer << endl;
     }
 
-    cout << receiveBuffer;
+    // Properly close the sockets and clean up Winsock
+    closesocket(acceptSocket);
+    closesocket(serverSocket);
+    WSACleanup();
+
+    return 0;
 }

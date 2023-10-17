@@ -19,7 +19,7 @@ Create a new `C++ Console Project` and follow the steps belows:
 - Select the `Properties` (by default `Alt+F7`)
 - In opened window in left menu select `Linker`
 - In submenu select `Input`
-- In main view select `Additional Dependencies` and `Change...`
+- In main view select `Additional Dependencies` and `Edit...`
 - In opened subwindow in input print `ws2_32.lib` and click `OK`
 - Click `Apply` and then `OK`
 - Done!

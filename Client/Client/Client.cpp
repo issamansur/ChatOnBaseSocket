@@ -1,8 +1,26 @@
-﻿#include <iostream>
+#include <iostream>
+#include <string>
+#include <vector>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
 using namespace std;
+
+
+vector<string> splitString(const string& str, int n) {
+    vector<string> result;
+    int length = str.length();
+
+    for (int i = 0; i < length; i += n) {
+        string chunk = str.substr(i, n);
+        if (chunk.length() < n) {
+            chunk += string(n - chunk.length(), '\0');
+        }
+        result.push_back(chunk);
+    }
+
+    return result;
+}
 
 int main()
 {
@@ -23,7 +41,7 @@ int main()
 
 
     // Create a socket
-    SOCKET clientSocket, acceptSocket;
+    SOCKET clientSocket;
 
     clientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (clientSocket == INVALID_SOCKET) {
@@ -51,16 +69,34 @@ int main()
     }
     cout << "Client connect() is OK!" << endl;
 
-    // Send message
-    char buffer[200];
-    printf("Enter your messsage: ");
-    cin.getline(buffer, 200);
-    int byteCount = send(clientSocket, buffer, 200, 0);
-    if (byteCount == SOCKET_ERROR) {
-        cout << "Server send error: " << WSAGetLastError() << endl;
-        WSACleanup();
-        return -1;
-    }
+    // Send data
+    const int bufferSize = 200;
+    string message;
 
-    cout << "Server sent message" << endl;
+    while (true) {
+        printf("Enter your message: ");
+        getline(cin, message);
+        vector<string> chunks = splitString(message, bufferSize - 4);
+
+        int i = 0;
+        int n = chunks.size();
+
+        for (string chunk : chunks) {
+            // add meta data
+            string new_chunk = to_string(++i) + '/' + to_string(n);
+            //add main data
+            new_chunk += chunk;
+
+            // send
+            int byteCount = send(clientSocket, new_chunk.c_str(), bufferSize, 0);
+            if (byteCount == SOCKET_ERROR) {
+                cout << "Server send error: " << WSAGetLastError() << endl;
+                WSACleanup();
+                return -1;
+            }
+            cout << "Client sent chunk ";
+            cout << '[' + to_string(i) + '/' + to_string(n) + ']' << endl;
+        }
+        cout << "Client sent message" << endl;
+    }
 }

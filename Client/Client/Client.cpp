@@ -22,8 +22,22 @@ vector<string> splitString(const string& str, int n) {
     return result;
 }
 
-int main()
-{
+int main(int argc, char** argv) {
+    // Main Settings
+    const char* ip_address = "127.0.0.1";
+    int port = 55555;
+
+    // Handler of command line arguments
+    for (int i = 2; i < argc; i += 2) {
+        if (strcmp(argv[i - 1], "-ip") == 0)
+            ip_address = argv[i];
+        else if (strcmp(argv[i - 1], "-port") == 0)
+            port = atoi(argv[i]);
+    }
+
+    cout << "IP ADDRESS: " << ip_address << endl;
+    cout << "PORT: " << port << endl << endl;
+
     // Initialize WSA
     WSADATA wsaData;
     int wsa_startup_return_code;
@@ -54,13 +68,16 @@ int main()
     }
 
 
-    // Connecting client
-    int port = 55555;
-
+    // Connecting 
     sockaddr_in service;
     service.sin_family = AF_INET;
-    InetPton(AF_INET, L"127.0.0.1", &service.sin_addr.s_addr);
+    
+    if (inet_pton(AF_INET, ip_address, &service.sin_addr.s_addr) <= 0) {
+        cout << "Error in IP address" << endl;
+        return 0;
+    }
     service.sin_port = htons(port);
+
     if (connect(clientSocket, (SOCKADDR*)&service, sizeof(service)) == SOCKET_ERROR) {
         cout << "Connecting failed: " << WSAGetLastError() << endl;
         closesocket(clientSocket);

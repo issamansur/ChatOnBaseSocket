@@ -6,25 +6,9 @@
 
 using namespace std;
 
-
-vector<string> splitString(const string& str, int n) {
-    vector<string> result;
-    int length = str.length();
-
-    for (int i = 0; i < length; i += n) {
-        string chunk = str.substr(i, n);
-        if (chunk.length() < n) {
-            chunk += string(n - chunk.length(), '\0');
-        }
-        result.push_back(chunk);
-    }
-
-    return result;
-}
-
 int main(int argc, char** argv) {
     // Main Settings
-    const char* ip_address = "127.0.0.1";
+    const char* ip_address = "127.0.0.1"; // is correct without malloc?
     int port = 55555;
 
     // Handler of command line arguments
@@ -71,7 +55,7 @@ int main(int argc, char** argv) {
     // Connecting 
     sockaddr_in service;
     service.sin_family = AF_INET;
-    
+
     if (inet_pton(AF_INET, ip_address, &service.sin_addr.s_addr) <= 0) {
         cout << "Error in IP address" << endl;
         return 0;
@@ -88,31 +72,40 @@ int main(int argc, char** argv) {
 
     // Send data
     const int bufferSize = 200;
-    string message;
+    string message_str;
 
     while (true) {
         printf("Enter your message: ");
-        getline(cin, message);
-        vector<string> chunks = splitString(message, bufferSize - 4);
+        getline(cin, message_str);
 
-        int i = 0;
-        int n = chunks.size();
+        const char* message = message_str.c_str();
+        int message_len = strlen(message);
+        int chunks_count = (message_len - 1) / (bufferSize - 3) + 1;
+        char* current_chunk = (char*)malloc(201 * sizeof(char)); // or 1
+        for (int i = 0; i < chunks_count; i++) {
+            // zeros chunk
+            memset(current_chunk, '\0', bufferSize); // or 0
 
-        for (string chunk : chunks) {
             // add meta data
-            string new_chunk = to_string(++i) + '/' + to_string(n);
-            //add main data
-            new_chunk += chunk;
+            current_chunk[0] = '0' + (i + 1);
+            current_chunk[1] = '/';
+            current_chunk[2] = '0' + chunks_count;
 
-            // send
-            int byteCount = send(clientSocket, new_chunk.c_str(), bufferSize, 0);
+            // add main data
+            memcpy(current_chunk + 3, message, bufferSize - 3);
+
+            // send chunk
+            int byteCount = send(clientSocket, current_chunk, bufferSize, 0);
             if (byteCount == SOCKET_ERROR) {
                 cout << "Server send error: " << WSAGetLastError() << endl;
                 WSACleanup();
                 return -1;
             }
             cout << "Client sent chunk ";
-            cout << '[' + to_string(i) + '/' + to_string(n) + ']' << endl;
+            cout << '[' + to_string(i+1) + '/' + to_string(chunks_count) + ']' << endl;
+
+            // increase offset for pointer
+            message += bufferSize - 3;
         }
         cout << "Client sent message" << endl;
     }

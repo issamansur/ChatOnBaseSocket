@@ -32,4 +32,4 @@ Create a new `C++ Console Project` and follow the steps belows:
 - [ ] `Server` can receive message from one `Client` and MAYBE send this message to second `Client` 
 - [ ] `Server` can respond on `Client`'s message with time mark
 - [x] Add args for cli (Command line)
-- [ ] Change splitting: vector<string> -> char* (for optimize)
+- [x] Change splitting: vector<string> -> char* (for optimize)

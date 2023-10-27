@@ -94,13 +94,21 @@ int main(int argc, char** argv) {
     int byteCount = 0;
     while (byteCount >= 0) {
         string message = "";
+        int byteCount = recv(acceptSocket, receiveBuffer, bufferSize, 0);
+        if (receiveBuffer[1] != '/' && receiveBuffer[0] != '0') {
+            cout << "Server received broken package. Continue receive..." << endl;
+        }
+        else {
+            cout << "Server received header" << endl;
+            message += string(receiveBuffer + 3);
+            message += string(": ");
+        }
 
         while (byteCount >= 0) {
-
             int byteCount = recv(acceptSocket, receiveBuffer, bufferSize, 0);
 
             if (receiveBuffer[1] != '/') {
-                cout << "Server received broken package. Continue receive" << endl;
+                cout << "Server received broken package. Continue receive..." << endl;
             }
             else {
                 int i = int(receiveBuffer[0] - '0');
@@ -119,7 +127,7 @@ int main(int argc, char** argv) {
             break;
         }
         else {
-            cout << "Received data: " << message << endl;
+            cout << message << endl;
         }
     }
 

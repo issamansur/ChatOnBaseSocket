@@ -1,8 +1,10 @@
 #include <iostream>
+#include <chrono>
+#include <ctime>
 #include <string>
-#include <vector>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+
 
 using namespace std;
 
@@ -70,42 +72,95 @@ int main(int argc, char** argv) {
     }
     cout << "Client connect() is OK!" << endl;
 
+    // Input username
+    string username_str;
+    const char* username = "";
+    int username_len = 0;
+
+    while (username_len < 5 or username_len > 20) {
+        printf("Enter your username (5-20 symbols): ");
+        getline(cin, username_str);
+        username = username_str.c_str();
+        username_len = strlen(username);
+    }
+
     // Send data
     const int bufferSize = 200;
+    const int metaSize = 3;
     string message_str;
 
     while (true) {
-        printf("Enter your message: ");
-        getline(cin, message_str);
+        printf(username);
+        printf(" (YOU) > ");
 
+        // input message
+        getline(cin, message_str);
         const char* message = message_str.c_str();
         int message_len = strlen(message);
-        int chunks_count = (message_len - 1) / (bufferSize - 3) + 1;
-        char* current_chunk = (char*)malloc(201 * sizeof(char)); // or 1
-        for (int i = 0; i < chunks_count; i++) {
+        int chunks_count = (message_len - 1) / (bufferSize - metaSize) + 1;
+        char* current_chunk = (char*)malloc(bufferSize * sizeof(char)); // or 1
+        
+        // send header
+        if (current_chunk != nullptr) {
             // zeros chunk
             memset(current_chunk, '\0', bufferSize); // or 0
 
             // add meta data
-            current_chunk[0] = '0' + (i + 1);
+            current_chunk[0] = '0';
             current_chunk[1] = '/';
             current_chunk[2] = '0' + chunks_count;
 
             // add main data
-            memcpy(current_chunk + 3, message, bufferSize - 3);
+            // add date
+            time_t t = std::time(0);   // get time now
+            tm* now = (tm*)malloc(sizeof(tm));
+            localtime_s(now, &t);
+            char* timeString = (char*)malloc(33);
+            sprintf_s(timeString, 33, "[%04d-%02d-%02d %02d:%02d:%02d] ",
+                now->tm_year + 1900, now->tm_mon + 1, now->tm_mday,
+                now->tm_hour, now->tm_min, now->tm_sec);
+            memcpy(current_chunk + metaSize, timeString, strlen(timeString));
+            // add username
+            memcpy(current_chunk + metaSize + strlen(timeString), username, username_len);
 
-            // send chunk
             int byteCount = send(clientSocket, current_chunk, bufferSize, 0);
             if (byteCount == SOCKET_ERROR) {
                 cout << "Server send error: " << WSAGetLastError() << endl;
                 WSACleanup();
                 return -1;
             }
-            cout << "Client sent chunk ";
-            cout << '[' + to_string(i+1) + '/' + to_string(chunks_count) + ']' << endl;
+            cout << "Client sent header" << endl;
+        }
 
-            // increase offset for pointer
-            message += bufferSize - 3;
+        // send message by chunks
+        for (int i = 0; i < chunks_count; i++) {
+            if (current_chunk != nullptr) {
+                // zeros chunk
+                memset(current_chunk, '\0', bufferSize); // or 0
+
+                // add meta data
+                current_chunk[0] = '0' + (i + 1);
+                current_chunk[1] = '/';
+                current_chunk[2] = '0' + chunks_count;
+
+                // add main data
+                memcpy(current_chunk + metaSize, message, bufferSize - metaSize);
+
+                // send chunk
+                int byteCount = send(clientSocket, current_chunk, bufferSize, 0);
+                if (byteCount == SOCKET_ERROR) {
+                    cout << "Server send error: " << WSAGetLastError() << endl;
+                    WSACleanup();
+                    return -1;
+                }
+                cout << "Client sent chunk ";
+                cout << '[' + to_string(i + 1) + '/' + to_string(chunks_count) + ']' << endl;
+
+                // increase offset for pointer
+                message += bufferSize - metaSize;
+            }
+            else
+                cout << "Error with memory" << endl;
         }
         cout << "Client sent message" << endl;
     }

@@ -33,3 +33,38 @@ Create a new `C++ Console Project` and follow the steps belows:
 - [ ] `Server` can respond on `Client`'s message with time mark
 - [x] Add args for cli (Command line)
 - [x] Change splitting: vector<string> -> char* (for optimize)
+
+## Example
+
+### Server
+```
+IP ADDRESS: 127.0.0.1
+PORT: 55555
+
+The Winsock dll found!
+The status: Running
+socket() is OK!
+bind() is OK!
+Start listening on port: 55555
+Accepted connection
+Server received header
+Server received chunk [1/1]
+[2023-10-27 21:50:19] issamansur: Hi
+```
+
+### Client
+```
+IP ADDRESS: 127.0.0.1
+PORT: 55555
+
+The Winsock dll found!
+The status: Running
+socket() is OK!
+Client connect() is OK!
+Enter your username (5-20 symbols): issamansur
+issamansur (YOU) > Hi
+Client sent header
+Client sent chunk [1/1]
+Client sent message
+issamansur (YOU) > _
+```

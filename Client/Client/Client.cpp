@@ -130,6 +130,9 @@ int main(int argc, char** argv) {
                 return -1;
             }
             cout << "Client sent header" << endl;
+
+            free(tm);
+            free(timeString);
         }
 
         // send message by chunks
@@ -163,5 +166,7 @@ int main(int argc, char** argv) {
                 cout << "Error with memory" << endl;
         }
         cout << "Client sent message" << endl;
+
+        free(current_chunk);
     }
 }

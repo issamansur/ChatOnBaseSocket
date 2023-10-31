@@ -27,10 +27,10 @@ Create a new `C++ Console Project` and follow the steps belows:
 ## Tasks
 - [x] Connect `Client` with `Server`
 - [x] `Client` can send message with size more than `bufferSize`
-- [ ] `Client` can send more than one message
+- [x] `Client` can send more than one message
 - [ ] `Server` can accept and listen more than one `Client`
 - [ ] `Server` can receive message from one `Client` and MAYBE send this message to second `Client` 
-- [x] `Server` can respond on `Client`'s message with time mark
+- [ ] `Server` can respond on `Client`'s message
 - [x] Add args for cli (Command line)
 - [x] Change splitting: vector<string> -> char* (for optimize)
 

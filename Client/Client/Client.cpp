@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
             }
             cout << "Client sent header" << endl;
 
-            free(tm);
+            free(now);
             free(timeString);
         }
 

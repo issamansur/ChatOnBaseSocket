@@ -68,3 +68,7 @@ Client sent chunk [1/1]
 Client sent message
 issamansur (YOU) > _
 ```
+
+### Interesting links for updates
+
+- [Formatting output](https://ru.stackoverflow.com/questions/1243530/%D0%9A%D0%B0%D0%BA-%D0%BE%D0%B4%D0%BD%D0%BE%D0%B2%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%D0%BD%D0%BE-%D0%B2%D0%B2%D0%BE%D0%B4%D0%B8%D1%82%D1%8C-%D0%B8-%D0%B2%D1%8B%D0%B2%D0%BE%D0%B4%D0%B8%D1%82%D1%8C-%D0%B4%D0%B0%D0%BD%D0%BD%D1%8B%D0%B5-%D0%B2-%D0%BA%D0%BE%D0%BD%D1%81%D0%BE%D0%BB%D1%8C-python?ysclid=lomiqw8bly490441757)

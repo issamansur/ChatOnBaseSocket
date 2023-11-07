@@ -39,6 +39,7 @@ Create a new `C++ Console Project` and follow the steps belows:
 
 ### Additional
 - [x] Change splitting: vector<string> -> char* (for optimize)
+- [ ] Every client mudt have unique username
 - [ ] Add formatted output (BETA)
 
 ## Example

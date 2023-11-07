@@ -39,7 +39,9 @@ Create a new `C++ Console Project` and follow the steps belows:
 
 ### Additional
 - [x] Change splitting: vector<string> -> char* (for optimize)
-- [ ] Every client mudt have unique username
+- [ ] Every client must have unique username
+- [ ] Add command `/exit` to leave chat
+- [ ] Add command `/private [username]` to send private message
 - [ ] Add formatted output (BETA)
 
 ## Example

@@ -5,6 +5,8 @@
 
 using namespace std;
 
+void respond(SOCKET acceptSocket, string message);
+
 int main(int argc, char** argv) {
     // Main Settings
     const char* ip_address = "127.0.0.1";
@@ -128,6 +130,8 @@ int main(int argc, char** argv) {
         }
         else {
             cout << message << endl;
+
+            respond(acceptSocket, "[Server]: Message received!");
         }
     }
 
@@ -138,4 +142,11 @@ int main(int argc, char** argv) {
     WSACleanup();
 
     return 0;
+}
+
+void respond(SOCKET acceptSocket, string message) {
+    int byteCount = send(acceptSocket, message.c_str(), message.length(), 0);
+    if (byteCount == SOCKET_ERROR) {
+        cout << "Server send error: " << WSAGetLastError() << endl;
+    }
 }

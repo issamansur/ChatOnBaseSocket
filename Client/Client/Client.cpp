@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
         int message_len = strlen(message);
         int chunks_count = (message_len - 1) / (bufferSize - metaSize) + 1;
         char* current_chunk = (char*)malloc(bufferSize * sizeof(char)); // or 1
-        
+
         // send header
         if (current_chunk != nullptr) {
             // zeros chunk
@@ -168,5 +168,15 @@ int main(int argc, char** argv) {
         cout << "Client sent message" << endl;
 
         free(current_chunk);
+
+        // Receive respond from server
+        char responseBuffer[bufferSize + 1] = "";
+        int responseByteCount = recv(clientSocket, responseBuffer, bufferSize, 0);
+        if (responseByteCount == SOCKET_ERROR) {
+            cout << "Client receive error: " << WSAGetLastError() << endl;
+        }
+        else {
+            cout << responseBuffer << endl;
+        }
     }
 }

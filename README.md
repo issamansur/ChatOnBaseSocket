@@ -33,12 +33,13 @@ Create a new `C++ Console Project` and follow the steps belows:
 - [x] `Client` can send more than one message
 - [x] `Server` can respond on `Client`'s message
 
-- [ ] `Server` can accept and listen more than one `Client`
-- [ ] `Server` can receive message from one `Client` and MAYBE send this message to second `Client` 
+- [x] `Server` can accept and listen more than one `Client`
+- [ ] `Server` can receive message from one `Client` and MAYBE send this message to others `Client`s 
 
 
 ### Additional
 - [x] Change splitting: vector<string> -> char* (for optimize)
+- [ ]
 - [ ] Every client must have unique username
 - [ ] Add command `/exit` to leave chat
 - [ ] Add command `/private [username]` to send private message

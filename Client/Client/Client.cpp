@@ -129,7 +129,7 @@ int main(int argc, char** argv) {
                 WSACleanup();
                 return -1;
             }
-            cout << "Client sent header" << endl;
+            // cout << "Client sent header" << endl;
 
             free(now);
             free(timeString);
@@ -156,8 +156,10 @@ int main(int argc, char** argv) {
                     WSACleanup();
                     return -1;
                 }
+                /*
                 cout << "Client sent chunk ";
                 cout << '[' + to_string(i + 1) + '/' + to_string(chunks_count) + ']' << endl;
+				*/
 
                 // increase offset for pointer
                 message += bufferSize - metaSize;
@@ -165,7 +167,7 @@ int main(int argc, char** argv) {
             else
                 cout << "Error with memory" << endl;
         }
-        cout << "Client sent message" << endl;
+        // cout << "Client sent message" << endl;
 
         free(current_chunk);
 

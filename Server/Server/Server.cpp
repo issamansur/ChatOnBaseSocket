@@ -2,9 +2,18 @@
 #include <string>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <thread>
+#include <vector>
+#include <mutex>
 
 using namespace std;
 
+// Global vars
+vector<SOCKET> clientSockets;
+mutex clientSocketsMutex;
+
+// Functions
+void clientHandler(SOCKET clientSocket);
 void respond(SOCKET acceptSocket, string message);
 
 int main(int argc, char** argv) {
@@ -78,36 +87,53 @@ int main(int argc, char** argv) {
     cout << "Start listening on port: " << port << endl;
 
 
-    // Accept a connection
-    acceptSocket = accept(serverSocket, NULL, NULL);
-    if (acceptSocket == INVALID_SOCKET) {
-        cout << "Accept failed: " << WSAGetLastError() << endl;
-        closesocket(serverSocket);
-        WSACleanup();
-        return -1;
+    // Accept a connections
+
+    while (true) {
+        acceptSocket = accept(serverSocket, NULL, NULL);
+        if (acceptSocket == INVALID_SOCKET) {
+            cout << "Accept failed: " << WSAGetLastError() << endl;
+            closesocket(serverSocket);
+            WSACleanup();
+            return -1;
+        }
+        cout << "Accepted connection" << endl;
+
+        {
+			lock_guard<mutex> lock(clientSocketsMutex);
+			clientSockets.push_back(acceptSocket);
+		}
+
+        thread clientThread(clientHandler, acceptSocket);
+		clientThread.detach();
     }
-    cout << "Accepted connection" << endl;
 
+    // Properly close the socket and clean up Winsock
+    closesocket(serverSocket);
+    WSACleanup();
 
-    // Receive data
+    return 0;
+}
+
+void clientHandler(SOCKET clientSocket) {
     const int bufferSize = 200;
     char receiveBuffer[bufferSize + 1] = "";
 
     int byteCount = 0;
     while (byteCount >= 0) {
         string message = "";
-        int byteCount = recv(acceptSocket, receiveBuffer, bufferSize, 0);
+        int byteCount = recv(clientSocket, receiveBuffer, bufferSize, 0);
         if (receiveBuffer[1] != '/' && receiveBuffer[0] != '0') {
             cout << "Server received broken package. Continue receive..." << endl;
         }
         else {
-            cout << "Server received header" << endl;
+            // cout << "Server received header" << endl;
             message += string(receiveBuffer + 3);
             message += string(": ");
         }
 
         while (byteCount >= 0) {
-            int byteCount = recv(acceptSocket, receiveBuffer, bufferSize, 0);
+            int byteCount = recv(clientSocket, receiveBuffer, bufferSize, 0);
 
             if (receiveBuffer[1] != '/') {
                 cout << "Server received broken package. Continue receive..." << endl;
@@ -115,9 +141,10 @@ int main(int argc, char** argv) {
             else {
                 int i = int(receiveBuffer[0] - '0');
                 int n = int(receiveBuffer[2] - '0');
+                /*
                 cout << "Server received chunk ";
                 cout << '[' + to_string(i) + '/' + to_string(n) + ']' << endl;
-
+                */
                 message += string(receiveBuffer + 3);
 
                 if (i == n)
@@ -125,24 +152,33 @@ int main(int argc, char** argv) {
             }
         }
         if (byteCount < 0) {
-            cout << "Server error while receive message: " << WSAGetLastError() << endl;
-            break;
+            const int error = WSAGetLastError();
+            if (error == 10054)
+            {
+                cout << "Client has terminated the connection" << endl;
+                break;
+            }
+            else {
+                cout << "Server error while receive message: " << error << endl;
+            }
+
         }
         else {
             cout << message << endl;
 
-            respond(acceptSocket, "[Server]: Message received!");
+            respond(clientSocket, "[Server]: Message received!");
         }
     }
 
-
-    // Properly close the sockets and clean up Winsock
-    closesocket(acceptSocket);
-    closesocket(serverSocket);
-    WSACleanup();
-
-    return 0;
+    // Close socket and remove from `clientSockets`
+    closesocket(clientSocket);
+    {
+        lock_guard<mutex> lock(clientSocketsMutex);
+        clientSockets.erase(remove(clientSockets.begin(), clientSockets.end(), clientSocket), clientSockets.end());
+    }
+    cout << "Client's socket was closed" << endl;
 }
+
 
 void respond(SOCKET acceptSocket, string message) {
     int byteCount = send(acceptSocket, message.c_str(), message.length(), 0);

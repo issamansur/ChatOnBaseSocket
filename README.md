@@ -25,14 +25,21 @@ Create a new `C++ Console Project` and follow the steps belows:
 - Done!
 
 ## Tasks
+
+### Main
 - [x] Connect `Client` with `Server`
+- [x] Add args for cli (Command line)
 - [x] `Client` can send message with size more than `bufferSize`
 - [x] `Client` can send more than one message
+- [ ] `Server` can respond on `Client`'s message
+
 - [ ] `Server` can accept and listen more than one `Client`
 - [ ] `Server` can receive message from one `Client` and MAYBE send this message to second `Client` 
-- [ ] `Server` can respond on `Client`'s message
-- [x] Add args for cli (Command line)
+
+
+### Additional
 - [x] Change splitting: vector<string> -> char* (for optimize)
+- [ ] Add formatted output (BETA)
 
 ## Example
 

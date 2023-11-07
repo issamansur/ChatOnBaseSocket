@@ -31,7 +31,7 @@ Create a new `C++ Console Project` and follow the steps belows:
 - [x] Add args for cli (Command line)
 - [x] `Client` can send message with size more than `bufferSize`
 - [x] `Client` can send more than one message
-- [ ] `Server` can respond on `Client`'s message
+- [x] `Server` can respond on `Client`'s message
 
 - [ ] `Server` can accept and listen more than one `Client`
 - [ ] `Server` can receive message from one `Client` and MAYBE send this message to second `Client` 
@@ -73,6 +73,7 @@ issamansur (YOU) > Hi
 Client sent header
 Client sent chunk [1/1]
 Client sent message
+[Server]: Message received!
 issamansur (YOU) > _
 ```
 

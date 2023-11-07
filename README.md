@@ -39,7 +39,7 @@ Create a new `C++ Console Project` and follow the steps belows:
 
 ### Additional
 - [x] Change splitting: vector<string> -> char* (for optimize)
-- [ ] Add maximum count of `Client`s
+- [x] Add maximum count of `Client`s
 - [ ] Every `Client` must have unique username
 - [ ] Add command `/exit` to leave chat
 - [ ] Add command `/private [username]` to send private message
@@ -57,10 +57,8 @@ The status: Running
 socket() is OK!
 bind() is OK!
 Start listening on port: 55555
-Accepted connection
-Server received header
-Server received chunk [1/1]
-[2023-10-27 21:50:19] issamansur: Hi
+Accepted connection 1/10
+[2023-11-07 21:19:51] issamansur: Hello, World!
 ```
 
 ### Client
@@ -73,10 +71,7 @@ The status: Running
 socket() is OK!
 Client connect() is OK!
 Enter your username (5-20 symbols): issamansur
-issamansur (YOU) > Hi
-Client sent header
-Client sent chunk [1/1]
-Client sent message
+issamansur (YOU) > Hello, World!
 [Server]: Message received!
 issamansur (YOU) > _
 ```

@@ -9,12 +9,18 @@
 using namespace std;
 
 // Global vars
+int currentClientCount = 0;
+mutex clientCountMutex;
+
+const int maxClients = 10;
+
 vector<SOCKET> clientSockets;
 mutex clientSocketsMutex;
 
 // Functions
 void clientHandler(SOCKET clientSocket);
 void respond(SOCKET acceptSocket, string message);
+void on_error(int wsaCode);
 
 int main(int argc, char** argv) {
     // Main Settings
@@ -93,19 +99,32 @@ int main(int argc, char** argv) {
         acceptSocket = accept(serverSocket, NULL, NULL);
         if (acceptSocket == INVALID_SOCKET) {
             cout << "Accept failed: " << WSAGetLastError() << endl;
-            closesocket(serverSocket);
+            closesocket(acceptSocket);
             WSACleanup();
-            return -1;
+            continue;
         }
-        cout << "Accepted connection" << endl;
-
+		else
         {
-			lock_guard<mutex> lock(clientSocketsMutex);
-			clientSockets.push_back(acceptSocket);
-		}
+            lock_guard<mutex> lock(clientCountMutex);
+            if (currentClientCount < maxClients) {
+                currentClientCount++;
 
-        thread clientThread(clientHandler, acceptSocket);
-		clientThread.detach();
+                cout << "Accepted connection";
+                cout << ' ' << currentClientCount << '/' << maxClients << endl;
+
+                {
+                    lock_guard<mutex> lock(clientSocketsMutex);
+                    clientSockets.push_back(acceptSocket);
+                }
+
+                thread clientThread(clientHandler, acceptSocket);
+                clientThread.detach();
+            }
+            else {
+                cout << "Maximum client limit reached. Connection refused." << endl;
+                closesocket(acceptSocket);
+            }
+        }
     }
 
     // Properly close the socket and clean up Winsock
@@ -123,6 +142,12 @@ void clientHandler(SOCKET clientSocket) {
     while (byteCount >= 0) {
         string message = "";
         int byteCount = recv(clientSocket, receiveBuffer, bufferSize, 0);
+
+        if (byteCount < 0) {
+            on_error(WSAGetLastError());
+            break;
+        }
+
         if (receiveBuffer[1] != '/' && receiveBuffer[0] != '0') {
             cout << "Server received broken package. Continue receive..." << endl;
         }
@@ -134,7 +159,6 @@ void clientHandler(SOCKET clientSocket) {
 
         while (byteCount >= 0) {
             int byteCount = recv(clientSocket, receiveBuffer, bufferSize, 0);
-
             if (receiveBuffer[1] != '/') {
                 cout << "Server received broken package. Continue receive..." << endl;
             }
@@ -152,16 +176,8 @@ void clientHandler(SOCKET clientSocket) {
             }
         }
         if (byteCount < 0) {
-            const int error = WSAGetLastError();
-            if (error == 10054)
-            {
-                cout << "Client has terminated the connection" << endl;
-                break;
-            }
-            else {
-                cout << "Server error while receive message: " << error << endl;
-            }
-
+            on_error(WSAGetLastError());
+            break;
         }
         else {
             cout << message << endl;
@@ -174,9 +190,12 @@ void clientHandler(SOCKET clientSocket) {
     closesocket(clientSocket);
     {
         lock_guard<mutex> lock(clientSocketsMutex);
+        lock_guard<mutex> lock2(clientCountMutex);
+        currentClientCount--;
         clientSockets.erase(remove(clientSockets.begin(), clientSockets.end(), clientSocket), clientSockets.end());
     }
-    cout << "Client's socket was closed" << endl;
+    cout << "Client's socket was closed";
+    cout << ' ' << currentClientCount << '/' << maxClients << endl;
 }
 
 
@@ -185,4 +204,11 @@ void respond(SOCKET acceptSocket, string message) {
     if (byteCount == SOCKET_ERROR) {
         cout << "Server send error: " << WSAGetLastError() << endl;
     }
+}
+
+void on_error(int wsaCode) {
+    if (wsaCode == 10054)
+		cout << "Client has terminated the connection" << endl;
+	else
+		cout << "Server error: " << wsaCode << endl;
 }

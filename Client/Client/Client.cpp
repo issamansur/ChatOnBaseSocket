@@ -4,9 +4,17 @@
 #include <string>
 #include <winsock2.h>
 #include <ws2tcpip.h>
-
+#include <thread>
+#include <mutex>
+#include <windows.h>
 
 using namespace std;
+short curPosOutputY = 0;
+mutex cursor;
+
+void receiveMessages(SOCKET clientSocket);
+COORD getCursorPosition();
+void setCursorPosition(int x, int y);
 
 int main(int argc, char** argv) {
     // Main Settings
@@ -84,18 +92,40 @@ int main(int argc, char** argv) {
         username_len = strlen(username);
     }
 
+    thread receiveThread(receiveMessages, clientSocket);
+    receiveThread.detach();
+
+    curPosOutputY = getCursorPosition().Y;
+
     // Send data
     const int bufferSize = 200;
     const int metaSize = 3;
     string message_str;
 
     while (true) {
-        printf(username);
-        printf(" (YOU) > ");
+        {
+            lock_guard<mutex> lock(cursor);
 
+            setCursorPosition(0, curPosOutputY);
+            for (int i = 0; i < 8192; i++)
+                cout << ' ';
+            setCursorPosition(0, max(curPosOutputY - 12, 0));
+            setCursorPosition(0, curPosOutputY + 17);
+
+            printf(username);
+            printf(" (YOU) > ");
+        }
         // input message
         getline(cin, message_str);
         const char* message = message_str.c_str();
+        
+        // commands handler
+        if (strcmp(message, "/exit") == 0) {
+			cout << "Client closed the connection." << endl;
+			break;
+		}
+
+
         int message_len = strlen(message);
         int chunks_count = (message_len - 1) / (bufferSize - metaSize) + 1;
         char* current_chunk = (char*)malloc(bufferSize * sizeof(char)); // or 1
@@ -112,7 +142,7 @@ int main(int argc, char** argv) {
 
             // add main data
             // add date
-            time_t t = std::time(0);   // get time now
+            time_t t = time(0);   // get time now
             tm* now = (tm*)malloc(sizeof(tm));
             localtime_s(now, &t);
             char* timeString = (char*)malloc(33);
@@ -129,7 +159,7 @@ int main(int argc, char** argv) {
                 WSACleanup();
                 return -1;
             }
-            cout << "Client sent header" << endl;
+            // cout << "Client sent header" << endl;
 
             free(now);
             free(timeString);
@@ -156,8 +186,10 @@ int main(int argc, char** argv) {
                     WSACleanup();
                     return -1;
                 }
+                /*
                 cout << "Client sent chunk ";
                 cout << '[' + to_string(i + 1) + '/' + to_string(chunks_count) + ']' << endl;
+				*/
 
                 // increase offset for pointer
                 message += bufferSize - metaSize;
@@ -165,10 +197,10 @@ int main(int argc, char** argv) {
             else
                 cout << "Error with memory" << endl;
         }
-        cout << "Client sent message" << endl;
+        // cout << "Client sent message" << endl;
 
         free(current_chunk);
-
+        /*
         // Receive respond from server
         char responseBuffer[bufferSize + 1] = "";
         int responseByteCount = recv(clientSocket, responseBuffer, bufferSize, 0);
@@ -178,5 +210,48 @@ int main(int argc, char** argv) {
         else {
             cout << responseBuffer << endl;
         }
+        */
     }
+}
+
+void receiveMessages(SOCKET clientSocket) {
+    const int bufferSize = 200;
+
+    while (true) {
+        char receiveBuffer[bufferSize + 1] = "";
+        int byteCount = recv(clientSocket, receiveBuffer, bufferSize, 0);
+        
+        {
+            lock_guard<mutex> lock(cursor);
+
+            COORD curPos = getCursorPosition();
+            setCursorPosition(0, curPosOutputY);
+            if (byteCount == SOCKET_ERROR) {
+                cout << "Client receive error: " << WSAGetLastError() << endl;
+                break;
+            }
+            else if (byteCount == 0) {
+                cout << "Server closed the connection." << endl;
+                break;
+            }
+            else {
+                cout << receiveBuffer << endl;
+            }
+            curPosOutputY = getCursorPosition().Y;
+            setCursorPosition(curPos.X, curPos.Y);
+        }
+    }
+}
+
+COORD getCursorPosition() {
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+	return csbi.dwCursorPosition;
+}
+
+void setCursorPosition(int x, int y) {
+	static const HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	cout.flush();
+	COORD coord = { (SHORT)x, (SHORT)y };
+	SetConsoleCursorPosition(hOut, coord);
 }

@@ -34,16 +34,16 @@ Create a new `C++ Console Project` and follow the steps belows:
 - [x] `Server` can respond on `Client`'s message
 
 - [x] `Server` can accept and listen more than one `Client`
-- [ ] `Server` can receive message from one `Client` and MAYBE send this message to others `Client`s 
+- [x] `Server` can receive message from one `Client` and MAYBE send this message to others `Client`s 
 
 
 ### Additional
 - [x] Change splitting: vector<string> -> char* (for optimize)
 - [x] Add maximum count of `Client`s
 - [ ] Every `Client` must have unique username
-- [ ] Add command `/exit` to leave chat
+- [x] Add command `/exit` to leave chat
 - [ ] Add command `/private [username]` to send private message
-- [ ] Add formatted output (BETA)
+- [x] Add formatted output (BETA)
 
 ## Example
 
@@ -58,10 +58,17 @@ socket() is OK!
 bind() is OK!
 Start listening on port: 55555
 Accepted connection 1/10
-[2023-11-07 21:19:51] issamansur: Hello, World!
+Accepted connection 2/10
+[2023-11-08 22:10:19] user2: hi, user1
+[2023-11-08 22:10:32] user1: hello, user2
+[2023-11-08 22:10:50] user1: how are u?
+Client has terminated the connection
+Client's socket was closed 1/10
+Client has terminated the connection
+Client's socket was closed 0/10
 ```
 
-### Client
+### Client1
 ```
 IP ADDRESS: 127.0.0.1
 PORT: 55555
@@ -70,10 +77,35 @@ The Winsock dll found!
 The status: Running
 socket() is OK!
 Client connect() is OK!
-Enter your username (5-20 symbols): issamansur
-issamansur (YOU) > Hello, World!
-[Server]: Message received!
-issamansur (YOU) > _
+Enter your username (5-20 symbols): user1
+[2023-11-08 22:10:19] user2: hi, user1
+[2023-11-08 22:10:32] user1: hello, user2
+[2023-11-08 22:10:50] user1: how are u?
+
+...
+
+user1 (YOU) > /exit
+Client closed the connection.
+```
+
+### Client1
+```
+IP ADDRESS: 127.0.0.1
+PORT: 55555
+
+The Winsock dll found!
+The status: Running
+socket() is OK!
+Client connect() is OK!
+Enter your username (5-20 symbols): user2
+[2023-11-08 22:10:19] user2: hi, user1
+[2023-11-08 22:10:32] user1: hello, user2
+[2023-11-08 22:10:50] user1: how are u?
+
+...
+
+user1 (YOU) > /exit
+Client closed the connection.
 ```
 
 ### Interesting links for updates

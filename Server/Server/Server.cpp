@@ -159,6 +159,10 @@ void clientHandler(SOCKET clientSocket) {
 
         while (byteCount >= 0) {
             int byteCount = recv(clientSocket, receiveBuffer, bufferSize, 0);
+            if (byteCount <= 0) {
+                on_error(WSAGetLastError());
+                break;
+            }
             if (receiveBuffer[1] != '/') {
                 cout << "Server received broken package. Continue receive..." << endl;
             }
@@ -182,7 +186,15 @@ void clientHandler(SOCKET clientSocket) {
         else {
             cout << message << endl;
 
-            respond(clientSocket, "[Server]: Message received!");
+            //respond(clientSocket, "[Server]: Message received!");
+
+            {
+                lock_guard<mutex> lock(clientSocketsMutex);
+                for (SOCKET client : clientSockets) {
+                    /*if (client != clientSocket)*/
+                        respond(client, message);
+                }
+            }
         }
     }
 
@@ -207,6 +219,8 @@ void respond(SOCKET acceptSocket, string message) {
 }
 
 void on_error(int wsaCode) {
+    if (wsaCode == 10053)
+        cout << "Client send empty message" << endl;
     if (wsaCode == 10054)
 		cout << "Client has terminated the connection" << endl;
 	else
